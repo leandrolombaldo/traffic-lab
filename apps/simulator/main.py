@@ -52,7 +52,7 @@ def main() -> int:
         traci.simulationStep()
         controller.step(t)
         metrics.step(t)
-        if traci.simulation.getMinExpectedNumber() == 0:
+        if t >= 30 and traci.simulation.getMinExpectedNumber() == 0:
             break
 
     controller.on_finish()
