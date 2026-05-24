@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 
 import traci
@@ -42,7 +43,12 @@ def main() -> int:
         "true",
     ]
 
-    traci.start(cmd, cwd=str(scenario.dir))
+    prev_cwd = os.getcwd()
+    os.chdir(str(scenario.dir))
+    try:
+        traci.start(cmd)
+    finally:
+        os.chdir(prev_cwd)
 
     controller = _build_controller(args.strategy, scenario)
     metrics = MetricsCollector()
