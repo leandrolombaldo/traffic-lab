@@ -1,0 +1,33 @@
+{
+  "meta": {
+    "id": "20260524_120000_rule_demo",
+    "startedAt": "2026-05-24T12:00:00-0300",
+    "strategy": "rule_based",
+    "scenario": "intersection_4way",
+    "seed": 42,
+    "durationSeconds": 120
+  },
+  "metrics": {
+    "avgWaitingTimeSeconds": 11.9,
+    "avgQueueLength": 4.2,
+    "maxQueueLength": 12,
+    "vehiclesCompleted": 154,
+    "avgTravelTimeSeconds": 45.7,
+    "avgStops": 1.1
+  },
+  "timeseries": [
+    { "t": 0, "queueLength": 0, "avgWaitingTimeSeconds": 0.0 },
+    { "t": 10, "queueLength": 1, "avgWaitingTimeSeconds": 0.8 },
+    { "t": 20, "queueLength": 3, "avgWaitingTimeSeconds": 2.3 },
+    { "t": 30, "queueLength": 6, "avgWaitingTimeSeconds": 4.2 },
+    { "t": 40, "queueLength": 9, "avgWaitingTimeSeconds": 6.5 },
+    { "t": 50, "queueLength": 7, "avgWaitingTimeSeconds": 7.8 },
+    { "t": 60, "queueLength": 5, "avgWaitingTimeSeconds": 8.9 },
+    { "t": 70, "queueLength": 4, "avgWaitingTimeSeconds": 9.7 },
+    { "t": 80, "queueLength": 6, "avgWaitingTimeSeconds": 10.6 },
+    { "t": 90, "queueLength": 10, "avgWaitingTimeSeconds": 11.4 },
+    { "t": 100, "queueLength": 12, "avgWaitingTimeSeconds": 12.2 },
+    { "t": 110, "queueLength": 7, "avgWaitingTimeSeconds": 12.1 },
+    { "t": 120, "queueLength": 4, "avgWaitingTimeSeconds": 11.9 }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "id": "intersection_4way",
+  "sumocfg": "scenario.sumocfg",
+  "tlsId": "J0",
+  "laneGroups": {
+    "ns": ["N2J_0", "S2J_0"],
+    "ew": ["E2J_0", "W2J_0"]
+  }
+}

@@ -1,0 +1,13 @@
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/netconvertConfiguration.xsd">
+    <input>
+        <node-files value="intersection_4way.nod.xml"/>
+        <edge-files value="intersection_4way.edg.xml"/>
+        <connection-files value="intersection_4way.con.xml"/>
+    </input>
+    <output>
+        <output-file value="intersection_4way.net.xml"/>
+    </output>
+    <junctions>
+        <no-turnarounds value="true"/>
+    </junctions>
+</configuration>
