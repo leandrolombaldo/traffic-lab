@@ -51,7 +51,7 @@ def main() -> int:
         os.chdir(prev_cwd)
 
     controller = _build_controller(args.strategy, scenario)
-    metrics = MetricsCollector()
+    metrics = MetricsCollector(tls_id=scenario.tls_id, lane_groups=scenario.lane_groups)
 
     controller.on_start()
     for t in range(args.duration):
