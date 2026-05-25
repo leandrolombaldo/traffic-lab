@@ -1,6 +1,7 @@
 import Link from "next/link"
 
 import { DirectionalQueueChart } from "@/components/DirectionalQueueChart"
+import { IntersectionSnapshot } from "@/components/IntersectionSnapshot"
 import { MetricCard } from "@/components/MetricCard"
 import { RunStateCard } from "@/components/RunStateCard"
 import { TimeSeriesChart } from "@/components/TimeSeriesChart"
@@ -196,6 +197,11 @@ export function CompareDashboard(props: {
             }
             tone={aTone === "rule" || bTone === "rule" ? "rule" : "neutral"}
           />
+        </div>
+
+        <div className="mt-6 grid gap-4 xl:grid-cols-2">
+          <IntersectionSnapshot title="Cruzamento — Lado A" run={a} />
+          <IntersectionSnapshot title="Cruzamento — Lado B" run={b} />
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
