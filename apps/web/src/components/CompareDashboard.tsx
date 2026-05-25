@@ -5,6 +5,7 @@ import { IntersectionReplay } from "@/components/IntersectionReplay"
 import { IntersectionSnapshot } from "@/components/IntersectionSnapshot"
 import { MetricCard } from "@/components/MetricCard"
 import { RunStateCard } from "@/components/RunStateCard"
+import { SimulationConfigPanel } from "@/components/SimulationConfigPanel"
 import { TimeSeriesChart } from "@/components/TimeSeriesChart"
 import type { Run, RunSummary } from "@/lib/runTypes"
 import { strategyLabel } from "@/lib/strategy"
@@ -65,7 +66,9 @@ export function CompareDashboard(props: {
       </header>
 
       <main className="mx-auto w-full max-w-6xl px-6 py-8">
-        <form action="/" method="GET" className="grid gap-4 md:grid-cols-2">
+        <SimulationConfigPanel />
+
+        <form action="/" method="GET" className="mt-6 grid gap-4 md:grid-cols-2">
           <div className="rounded-xl border border-white/10 bg-white/5 p-4">
             <div className="text-xs uppercase tracking-[0.18em] text-white/60">Lado A</div>
             <div className="mt-3 flex items-center gap-3">
