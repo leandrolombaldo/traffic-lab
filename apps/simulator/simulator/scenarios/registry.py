@@ -17,6 +17,7 @@ class Scenario:
     lane_groups: dict[str, list[str]]
     net_file: Path
     route_file: Path
+    netconvert_config: Path
 
 
 def _scenario_dir(scenario_id: str) -> Path:
@@ -27,8 +28,9 @@ def load_scenario(scenario_id: str) -> Scenario:
     sdir = _scenario_dir(scenario_id)
     cfg = json.loads((sdir / "scenario.json").read_text(encoding="utf-8"))
 
-    net_file = sdir / "intersection_4way.net.xml"
-    route_file = sdir / "intersection_4way.rou.xml"
+    net_file = sdir / cfg.get("netFile", "intersection_4way.net.xml")
+    route_file = sdir / cfg.get("routeFile", "intersection_4way.rou.xml")
+    netconvert_config = sdir / cfg.get("netconvertConfig", "intersection_4way.netccfg")
     sumocfg = sdir / cfg["sumocfg"]
 
     return Scenario(
@@ -39,6 +41,7 @@ def load_scenario(scenario_id: str) -> Scenario:
         lane_groups=cfg["laneGroups"],
         net_file=net_file,
         route_file=route_file,
+        netconvert_config=netconvert_config,
     )
 
 
@@ -46,8 +49,7 @@ def ensure_scenario_assets(scenario: Scenario, demand_vph: int) -> None:
     bins = resolve_sumo_binaries()
 
     if not scenario.net_file.exists():
-        netccfg = scenario.dir / "intersection_4way.netccfg"
-        subprocess.run([bins.netconvert, "-c", str(netccfg)], cwd=str(scenario.dir), check=True)
+        subprocess.run([bins.netconvert, "-c", str(scenario.netconvert_config)], cwd=str(scenario.dir), check=True)
 
     if not scenario.route_file.exists():
         scenario.route_file.write_text(_default_routes_xml(demand_vph), encoding="utf-8")
@@ -67,4 +69,3 @@ def _default_routes_xml(demand_vph: int) -> str:
         f'    <flow id="fWE" type="car" route="rWE" begin="0" end="3600" vehsPerHour="{demand_vph}"/>\n'
         "</routes>\n"
     )
-
