@@ -24,6 +24,16 @@ function clampIndex(index: number, points: TimeSeriesPoint[]) {
   return Math.max(0, Math.min(points.length - 1, index))
 }
 
+function hasReplayVisualData(points: TimeSeriesPoint[]) {
+  return points.some(
+    (point) =>
+      typeof point.queueNS === "number" ||
+      typeof point.queueEW === "number" ||
+      typeof point.vehicleCount === "number" ||
+      typeof point.trafficLightPhase === "string",
+  )
+}
+
 export function IntersectionReplay(props: { title: string; run: Run | null }) {
   const points = useMemo(() => props.run?.timeseries ?? [], [props.run])
   const [index, setIndex] = useState(0)
@@ -37,6 +47,7 @@ export function IntersectionReplay(props: { title: string; run: Run | null }) {
   const phase = phaseLabel(point?.trafficLightPhase)
   const isNsActive = point?.trafficLightPhase?.startsWith("0") || point?.trafficLightPhase?.startsWith("1")
   const isEwActive = point?.trafficLightPhase?.startsWith("2") || point?.trafficLightPhase?.startsWith("3")
+  const hasVisualData = hasReplayVisualData(points)
 
   useEffect(() => {
     setIndex(0)
@@ -97,6 +108,12 @@ export function IntersectionReplay(props: { title: string; run: Run | null }) {
         </div>
       </div>
 
+      {!hasVisualData && props.run ? (
+        <div className="mt-4 rounded-xl border border-amber-300/20 bg-amber-300/10 p-3 text-xs text-amber-100">
+          Este run não tem dados visuais de replay. Rode uma nova simulação pelo painel acima para gerar queueNS, queueEW, vehicleCount e trafficLightPhase.
+        </div>
+      ) : null}
+
       <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_240px]">
         <div className="relative h-[360px] overflow-hidden rounded-xl border border-white/10 bg-black/30">
           <div className="absolute left-1/2 top-0 h-full w-20 -translate-x-1/2 bg-white/10" />
@@ -151,11 +168,11 @@ export function IntersectionReplay(props: { title: string; run: Run | null }) {
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl border border-white/10 bg-black/20 p-4">
               <div className="text-xs uppercase tracking-[0.18em] text-white/45">Fila NS</div>
-              <div className="mt-2 text-2xl font-semibold text-white">{nsQueue}</div>
+              <div className="mt-2 text-2xl font-semibold text-white">{hasVisualData ? nsQueue : "-"}</div>
             </div>
             <div className="rounded-xl border border-white/10 bg-black/20 p-4">
               <div className="text-xs uppercase tracking-[0.18em] text-white/45">Fila EW</div>
-              <div className="mt-2 text-2xl font-semibold text-white">{ewQueue}</div>
+              <div className="mt-2 text-2xl font-semibold text-white">{hasVisualData ? ewQueue : "-"}</div>
             </div>
           </div>
           <div className="rounded-xl border border-white/10 bg-black/20 p-4">
