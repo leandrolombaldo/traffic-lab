@@ -88,3 +88,21 @@ Depois execute o cenário gerado:
 ```bash
 python apps/simulator/main.py --scenario demo-corridor__baseline --strategy fixed --duration 600 --seed 42 --gui
 ```
+
+## Gerar cenário a partir de mapa OpenStreetMap local
+
+Ainda não há seleção de mapa pelo navegador. O primeiro suporte a mapa funciona a partir de um arquivo `.osm` ou `.osm.xml` salvo localmente.
+
+Exemplo:
+
+```bash
+python apps/simulator/generate_osm_scenario.py --osm-file data/osm/minha-area.osm.xml --scenario-id minha-area-demo --vehicles 300 --duration 600 --force
+```
+
+Depois execute:
+
+```bash
+python apps/simulator/main.py --scenario minha-area-demo --strategy fixed --duration 600 --seed 42 --gui
+```
+
+Observação: cenários importados de OSM ainda não têm `laneGroups` configurado para o controlador `rule_based`, então comece com `--strategy fixed`.
