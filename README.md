@@ -76,3 +76,15 @@ Os manifestos são salvos em:
 ```txt
 data/scenario-manifests/
 ```
+
+Gerar uma pasta de cenário SUMO a partir de um manifesto:
+
+```bash
+python apps/simulator/generate_sumo_scenario.py --manifest data/scenario-manifests/demo-corridor__baseline.json
+```
+
+Depois execute o cenário gerado:
+
+```bash
+python apps/simulator/main.py --scenario demo-corridor__baseline --strategy fixed --duration 600 --seed 42 --gui
+```
