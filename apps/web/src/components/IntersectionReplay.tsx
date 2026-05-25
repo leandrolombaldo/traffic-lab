@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import type { Run, TimeSeriesPoint } from "@/lib/runTypes"
 import { strategyLabel } from "@/lib/strategy"
@@ -27,6 +27,8 @@ function clampIndex(index: number, points: TimeSeriesPoint[]) {
 export function IntersectionReplay(props: { title: string; run: Run | null }) {
   const points = useMemo(() => props.run?.timeseries ?? [], [props.run])
   const [index, setIndex] = useState(0)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [speed, setSpeed] = useState(1)
 
   const currentIndex = clampIndex(index, points)
   const point = points[currentIndex]
@@ -36,16 +38,49 @@ export function IntersectionReplay(props: { title: string; run: Run | null }) {
   const isNsActive = point?.trafficLightPhase?.startsWith("0") || point?.trafficLightPhase?.startsWith("1")
   const isEwActive = point?.trafficLightPhase?.startsWith("2") || point?.trafficLightPhase?.startsWith("3")
 
+  useEffect(() => {
+    setIndex(0)
+    setIsPlaying(false)
+  }, [props.run?.meta.id])
+
+  useEffect(() => {
+    if (!isPlaying || points.length < 2) return
+
+    const intervalMs = Math.max(80, 500 / speed)
+    const interval = window.setInterval(() => {
+      setIndex((value) => {
+        if (value >= points.length - 1) {
+          window.clearInterval(interval)
+          setIsPlaying(false)
+          return points.length - 1
+        }
+        return value + 1
+      })
+    }, intervalMs)
+
+    return () => window.clearInterval(interval)
+  }, [isPlaying, points.length, speed])
+
   function step(delta: number) {
     setIndex((value) => clampIndex(value + delta, points))
   }
 
   function reset() {
     setIndex(0)
+    setIsPlaying(false)
   }
 
   function toEnd() {
     setIndex(points.length ? points.length - 1 : 0)
+    setIsPlaying(false)
+  }
+
+  function togglePlay() {
+    if (!points.length) return
+    if (currentIndex >= points.length - 1) {
+      setIndex(0)
+    }
+    setIsPlaying((value) => !value)
   }
 
   return (
@@ -129,6 +164,25 @@ export function IntersectionReplay(props: { title: string; run: Run | null }) {
           </div>
 
           <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <button type="button" onClick={togglePlay} disabled={!points.length} className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/80 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40">
+                {isPlaying ? "pausar" : "play"}
+              </button>
+              <label className="flex items-center gap-2 text-xs text-white/55">
+                velocidade
+                <select
+                  value={speed}
+                  onChange={(event) => setSpeed(Number(event.target.value))}
+                  className="rounded-lg border border-white/10 bg-black/40 px-2 py-1 text-white outline-none"
+                >
+                  <option value={0.5}>0.5x</option>
+                  <option value={1}>1x</option>
+                  <option value={2}>2x</option>
+                  <option value={4}>4x</option>
+                </select>
+              </label>
+            </div>
+
             <div className="flex items-center justify-between gap-3 text-xs text-white/45">
               <span>Início</span>
               <span>Fim</span>
@@ -138,7 +192,10 @@ export function IntersectionReplay(props: { title: string; run: Run | null }) {
               min={0}
               max={Math.max(0, points.length - 1)}
               value={currentIndex}
-              onChange={(event) => setIndex(Number(event.target.value))}
+              onChange={(event) => {
+                setIsPlaying(false)
+                setIndex(Number(event.target.value))
+              }}
               className="mt-3 w-full"
               disabled={!points.length}
             />
