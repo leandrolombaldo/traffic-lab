@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 
 const SCENARIOS = [
   { value: "intersection_4way", label: "Cruzamento 4 vias" },
@@ -23,7 +24,17 @@ function copyToClipboard(value: string) {
   void navigator.clipboard.writeText(value)
 }
 
+function runIdFromPath(path?: string | null) {
+  if (!path) return null
+  const normalized = path.replaceAll("\\", "/")
+  const filename = normalized.split("/").pop()
+  return filename?.replace(/\.json$/, "") ?? null
+}
+
 export function SimulationConfigPanel() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
   const [scenario, setScenario] = useState("intersection_4way")
   const [strategy, setStrategy] = useState("fixed")
   const [duration, setDuration] = useState(600)
@@ -65,17 +76,37 @@ export function SimulationConfigPanel() {
         return
       }
 
+      const runId = runIdFromPath(payload.runPath)
       setStatus({
         state: "success",
-        message: "Simulação finalizada. Atualize a página ou abra Runs para ver o novo resultado.",
+        message: runId
+          ? "Simulação finalizada. O novo run foi selecionado no comparativo."
+          : "Simulação finalizada. Atualize a página ou abra Runs para ver o novo resultado.",
         runPath: payload.runPath,
       })
+
+      if (runId) {
+        selectNewRun(runId)
+      }
     } catch (error) {
       setStatus({
         state: "error",
         message: error instanceof Error ? error.message : "Erro inesperado ao rodar simulação.",
       })
     }
+  }
+
+  function selectNewRun(runId: string) {
+    const params = new URLSearchParams(searchParams.toString())
+
+    if (strategy === "fixed") {
+      params.set("a", runId)
+    } else {
+      params.set("b", runId)
+    }
+
+    router.push(`/?${params.toString()}`)
+    router.refresh()
   }
 
   return (
