@@ -56,3 +56,23 @@ Projeto demo:
 ```txt
 data/projects/demo-corridor/project.json
 ```
+
+Inspecionar o projeto demo:
+
+```bash
+python apps/simulator/inspect_project.py
+```
+
+Gerar um manifesto inicial de cenário:
+
+```bash
+python apps/simulator/build_scenario_manifest.py --scenario baseline
+python apps/simulator/build_scenario_manifest.py --scenario green-wave-40
+python apps/simulator/build_scenario_manifest.py --scenario no-left-turn
+```
+
+Os manifestos são salvos em:
+
+```txt
+data/scenario-manifests/
+```
