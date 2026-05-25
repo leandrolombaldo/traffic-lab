@@ -59,7 +59,7 @@ export async function POST(request: Request) {
 
   if (gui) args.push("--gui")
 
-  const result = await runProcess("python", args, repoRoot)
+  const result = await runProcess(resolvePythonCommand(), args, repoRoot)
 
   if (result.code !== 0) {
     return NextResponse.json(
@@ -93,9 +93,13 @@ function clampNumber(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, Math.trunc(value)))
 }
 
+function resolvePythonCommand() {
+  return process.platform === "win32" ? "python.exe" : "python"
+}
+
 function runProcess(command: string, args: string[], cwd: string) {
   return new Promise<{ code: number | null; stdout: string; stderr: string }>((resolve) => {
-    const child = spawn(command, args, { cwd, shell: process.platform === "win32" })
+    const child = spawn(command, args, { cwd, shell: false })
     let stdout = ""
     let stderr = ""
 
