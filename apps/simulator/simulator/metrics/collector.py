@@ -16,7 +16,10 @@ class MetricsResult:
 
 
 class MetricsCollector:
-    def __init__(self):
+    def __init__(self, *, tls_id: str | None = None, lane_groups: dict[str, list[str]] | None = None):
+        self.tls_id = tls_id
+        self.lane_groups = lane_groups or {}
+
         self._t = 0
         self._queue_sum = 0.0
         self._queue_max = 0
@@ -32,7 +35,7 @@ class MetricsCollector:
         self._arrived_stop_sum = 0.0
         self._arrived_count = 0
 
-        self.timeseries: list[dict[str, float | int]] = []
+        self.timeseries: list[dict[str, float | int | str | None]] = []
 
     def step(self, t: int) -> None:
         self._t = t
@@ -59,9 +62,9 @@ class MetricsCollector:
         avg_wait = wait_sum / len(vehicle_ids) if vehicle_ids else 0.0
 
         lanes = [lid for lid in traci.lane.getIDList() if not lid.startswith(":")]
-        q_total = 0
-        for lane_id in lanes:
-            q_total += int(traci.lane.getLastStepHaltingNumber(lane_id))
+        q_total = _queue(lanes)
+        q_ns = _queue(self.lane_groups.get("ns", []))
+        q_ew = _queue(self.lane_groups.get("ew", []))
 
         self._queue_sum += q_total
         self._queue_samples += 1
@@ -71,7 +74,11 @@ class MetricsCollector:
             {
                 "t": int(t),
                 "queueLength": int(q_total),
+                "queueNS": int(q_ns),
+                "queueEW": int(q_ew),
                 "avgWaitingTimeSeconds": float(avg_wait),
+                "vehicleCount": int(len(vehicle_ids)),
+                "trafficLightPhase": _traffic_light_phase(self.tls_id),
             }
         )
 
@@ -105,3 +112,23 @@ class MetricsCollector:
             avg_stops=float(avg_stops),
         )
 
+
+def _queue(lanes: list[str]) -> int:
+    total = 0
+    for lane_id in lanes:
+        try:
+            total += int(traci.lane.getLastStepHaltingNumber(lane_id))
+        except traci.TraCIException:
+            continue
+    return total
+
+
+def _traffic_light_phase(tls_id: str | None) -> str | None:
+    if not tls_id:
+        return None
+    try:
+        phase_index = traci.trafficlight.getPhase(tls_id)
+        phase_name = traci.trafficlight.getPhaseName(tls_id)
+        return f"{phase_index}:{phase_name}" if phase_name else str(phase_index)
+    except traci.TraCIException:
+        return None
