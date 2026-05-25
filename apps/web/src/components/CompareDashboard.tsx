@@ -1,6 +1,8 @@
 import Link from "next/link"
 
+import { DirectionalQueueChart } from "@/components/DirectionalQueueChart"
 import { MetricCard } from "@/components/MetricCard"
+import { RunStateCard } from "@/components/RunStateCard"
 import { TimeSeriesChart } from "@/components/TimeSeriesChart"
 import type { Run, RunSummary } from "@/lib/runTypes"
 import { strategyLabel } from "@/lib/strategy"
@@ -196,11 +198,29 @@ export function CompareDashboard(props: {
           />
         </div>
 
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <RunStateCard title="Estado final — Lado A" run={a} />
+          <RunStateCard title="Estado final — Lado B" run={b} />
+        </div>
+
         <div className="mt-6">
           <TimeSeriesChart
-            title="Fila ao longo do tempo"
+            title="Fila total ao longo do tempo"
             pointsA={a?.timeseries}
             pointsB={b?.timeseries}
+          />
+        </div>
+
+        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          <DirectionalQueueChart
+            title="Fila por direção — Lado A"
+            label={a ? `${strategyLabel(a.meta.strategy)} · ${a.meta.scenario}` : undefined}
+            points={a?.timeseries}
+          />
+          <DirectionalQueueChart
+            title="Fila por direção — Lado B"
+            label={b ? `${strategyLabel(b.meta.strategy)} · ${b.meta.scenario}` : undefined}
+            points={b?.timeseries}
           />
         </div>
       </main>
