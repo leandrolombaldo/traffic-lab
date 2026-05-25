@@ -106,3 +106,37 @@ python apps/simulator/main.py --scenario minha-area-demo --strategy fixed --dura
 ```
 
 Observação: cenários importados de OSM ainda não têm `laneGroups` configurado para o controlador `rule_based`, então comece com `--strategy fixed`.
+
+## Baixar mapa por bounding box
+
+Também é possível baixar uma área do OpenStreetMap informando coordenadas.
+
+Exemplo:
+
+```bash
+python apps/simulator/download_osm_bbox.py \
+  --name minha-area \
+  --south -23.5650 \
+  --west -46.6600 \
+  --north -23.5550 \
+  --east -46.6450
+```
+
+Isso salva:
+
+```txt
+data/osm/minha-area.osm.xml
+data/osm/minha-area.bbox.json
+```
+
+Depois gere o cenário SUMO:
+
+```bash
+python apps/simulator/generate_osm_scenario.py --osm-file data/osm/minha-area.osm.xml --scenario-id minha-area --vehicles 300 --duration 600 --force
+```
+
+E execute:
+
+```bash
+python apps/simulator/main.py --scenario minha-area --strategy fixed --duration 600 --seed 42 --gui
+```
