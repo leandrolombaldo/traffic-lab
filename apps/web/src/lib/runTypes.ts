@@ -21,7 +21,11 @@ export type RunMetrics = {
 export type TimeSeriesPoint = {
   t: number
   queueLength: number
+  queueNS?: number
+  queueEW?: number
   avgWaitingTimeSeconds: number
+  vehicleCount?: number
+  trafficLightPhase?: string | null
 }
 
 export type Run = {
