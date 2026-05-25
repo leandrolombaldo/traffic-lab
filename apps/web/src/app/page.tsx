@@ -1,14 +1,15 @@
 import { CompareDashboard } from "@/components/CompareDashboard"
 import { defaultComparePair, listRuns, readRun } from "@/lib/runsFs"
 
-export default async function Page(props: {
-  searchParams?: { a?: string; b?: string }
-}) {
+type PageSearchParams = Promise<{ a?: string; b?: string }>
+
+export default async function Page(props: { searchParams?: PageSearchParams }) {
   const runs = await listRuns()
   const defaults = await defaultComparePair()
+  const searchParams = props.searchParams ? await props.searchParams : {}
 
-  const aId = props.searchParams?.a ?? defaults.fixedId
-  const bId = props.searchParams?.b ?? defaults.ruleId
+  const aId = searchParams.a ?? defaults.fixedId
+  const bId = searchParams.b ?? defaults.ruleId
 
   const a = aId ? await readRun(aId) : null
   const b = bId ? await readRun(bId) : null
