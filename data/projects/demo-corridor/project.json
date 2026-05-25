@@ -1,0 +1,53 @@
+{
+  "id": "demo-corridor",
+  "name": "Corredor Demo",
+  "description": "Projeto exemplo para preparar a evolução do MVP 1 para cenários urbanos parametrizados.",
+  "source": "manual",
+  "sourceRef": null,
+  "scenarios": [
+    {
+      "id": "baseline",
+      "name": "Cenário atual",
+      "baseScenarioId": null,
+      "notes": "Representa a configuração atual, sem intervenções.",
+      "interventions": []
+    },
+    {
+      "id": "green-wave-40",
+      "name": "Onda verde a 40 km/h",
+      "baseScenarioId": "baseline",
+      "notes": "Cenário conceitual para futura sincronização semafórica.",
+      "interventions": [
+        {
+          "id": "signal-green-wave-main",
+          "type": "signal_timing",
+          "targetId": "main-corridor",
+          "description": "Sincronizar semáforos do corredor principal para velocidade alvo de 40 km/h.",
+          "params": {
+            "targetSpeedKmh": 40,
+            "coordination": "green_wave"
+          }
+        }
+      ]
+    },
+    {
+      "id": "no-left-turn",
+      "name": "Restrição de conversão à esquerda",
+      "baseScenarioId": "baseline",
+      "notes": "Cenário conceitual para avaliar impacto de remover conversões conflitantes.",
+      "interventions": [
+        {
+          "id": "restrict-left-turn-main-01",
+          "type": "restrict_turn",
+          "targetId": "intersection-01",
+          "description": "Remover conversão à esquerda no cruzamento principal.",
+          "params": {
+            "from": "main-west",
+            "to": "north-approach",
+            "movement": "left"
+          }
+        }
+      ]
+    }
+  ]
+}
