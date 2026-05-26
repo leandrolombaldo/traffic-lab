@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 
-import type { Run, TimeSeriesPoint } from "@/lib/runTypes"
+import type { Run, TimeSeriesPoint, VehicleSnapshot } from "@/lib/runTypes"
 import { strategyLabel } from "@/lib/strategy"
 
 function phaseLabel(phase?: string | null) {
@@ -30,8 +30,41 @@ function hasReplayVisualData(points: TimeSeriesPoint[]) {
       typeof point.queueNS === "number" ||
       typeof point.queueEW === "number" ||
       typeof point.vehicleCount === "number" ||
-      typeof point.trafficLightPhase === "string",
+      typeof point.trafficLightPhase === "string" ||
+      Boolean(point.vehicles?.length),
   )
+}
+
+function vehicleTransform(vehicle: VehicleSnapshot) {
+  const laneId = vehicle.laneId
+  const p = vehicle.laneLength > 0 ? Math.max(0, Math.min(1, vehicle.lanePosition / vehicle.laneLength)) : 0
+
+  const top = 36
+  const bottom = 318
+  const left = 36
+  const right = 318
+  const centerA = 150
+  const centerB = 210
+
+  if (laneId.startsWith("N2J")) return { x: 190, y: top + (centerA - top) * p, rotate: 90 }
+  if (laneId.startsWith("J2S")) return { x: 170, y: centerB + (bottom - centerB) * p, rotate: 90 }
+
+  if (laneId.startsWith("S2J")) return { x: 170, y: bottom - (bottom - centerB) * p, rotate: -90 }
+  if (laneId.startsWith("J2N")) return { x: 190, y: centerA - (centerA - top) * p, rotate: -90 }
+
+  if (laneId.startsWith("W2J")) return { x: left + (centerA - left) * p, y: 190, rotate: 0 }
+  if (laneId.startsWith("J2E")) return { x: centerB + (right - centerB) * p, y: 170, rotate: 0 }
+
+  if (laneId.startsWith("E2J")) return { x: right - (right - centerB) * p, y: 170, rotate: 180 }
+  if (laneId.startsWith("J2W")) return { x: centerA - (centerA - left) * p, y: 190, rotate: 180 }
+
+  return null
+}
+
+function vehicleTone(vehicle: VehicleSnapshot) {
+  if (vehicle.speed < 0.1) return "bg-amber-300"
+  if (vehicle.laneId.includes("N") || vehicle.laneId.includes("S")) return "bg-emerald-300"
+  return "bg-violet-300"
 }
 
 export function IntersectionReplay(props: { title: string; run: Run | null }) {
@@ -48,6 +81,8 @@ export function IntersectionReplay(props: { title: string; run: Run | null }) {
   const isNsActive = point?.trafficLightPhase?.startsWith("0") || point?.trafficLightPhase?.startsWith("1")
   const isEwActive = point?.trafficLightPhase?.startsWith("2") || point?.trafficLightPhase?.startsWith("3")
   const hasVisualData = hasReplayVisualData(points)
+  const vehicles = point?.vehicles ?? []
+  const hasVehicles = vehicles.length > 0
 
   useEffect(() => {
     setIndex(0)
@@ -114,6 +149,12 @@ export function IntersectionReplay(props: { title: string; run: Run | null }) {
         </div>
       ) : null}
 
+      {hasVisualData && !hasVehicles ? (
+        <div className="mt-4 rounded-xl border border-cyan-300/20 bg-cyan-300/10 p-3 text-xs text-cyan-100">
+          Este run ainda não tem snapshots de veículos. Rode uma nova simulação após o último update para ver carrinhos se movendo.
+        </div>
+      ) : null}
+
       <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_240px]">
         <div className="relative h-[360px] overflow-hidden rounded-xl border border-white/10 bg-black/30">
           <div className="absolute left-1/2 top-0 h-full w-16 -translate-x-1/2 bg-white/10" />
@@ -131,29 +172,52 @@ export function IntersectionReplay(props: { title: string; run: Run | null }) {
           <div className="absolute right-[calc(50%-48px)] bottom-[calc(50%-48px)] h-4 w-4 rounded-full border border-white/20 bg-black" />
           <div className={`absolute right-[calc(50%-45px)] bottom-[calc(50%-45px)] h-2.5 w-2.5 rounded-full ${isEwActive ? "bg-emerald-300" : "bg-red-400"}`} />
 
-          <div className="absolute left-[calc(50%+14px)] top-20 flex flex-col-reverse gap-1">
-            {queueDots(nsQueue).map((_, i) => (
-              <div key={`n-${i}`} className="h-5 w-6 rounded-sm bg-emerald-300/70" />
-            ))}
-          </div>
+          {hasVehicles
+            ? vehicles.slice(0, 80).map((vehicle) => {
+                const transform = vehicleTransform(vehicle)
+                if (!transform) return null
 
-          <div className="absolute bottom-20 right-[calc(50%+14px)] flex flex-col gap-1 opacity-50">
-            {queueDots(nsQueue).map((_, i) => (
-              <div key={`s-${i}`} className="h-5 w-6 rounded-sm bg-emerald-300/60" />
-            ))}
-          </div>
+                return (
+                  <div
+                    key={vehicle.id}
+                    className={`absolute h-3.5 w-6 rounded-[4px] shadow-sm shadow-black/40 ${vehicleTone(vehicle)}`}
+                    style={{
+                      left: transform.x,
+                      top: transform.y,
+                      transform: `translate(-50%, -50%) rotate(${transform.rotate}deg)`,
+                      opacity: vehicle.speed < 0.1 ? 0.75 : 0.95,
+                    }}
+                    title={`${vehicle.id} · ${vehicle.laneId} · ${vehicle.speed.toFixed(1)}m/s`}
+                  />
+                )
+              })
+            : (
+              <>
+                <div className="absolute left-[calc(50%+14px)] top-20 flex flex-col-reverse gap-1">
+                  {queueDots(nsQueue).map((_, i) => (
+                    <div key={`n-${i}`} className="h-5 w-6 rounded-sm bg-emerald-300/70" />
+                  ))}
+                </div>
 
-          <div className="absolute left-20 top-[calc(50%+14px)] flex gap-1">
-            {queueDots(ewQueue).map((_, i) => (
-              <div key={`w-${i}`} className="h-6 w-5 rounded-sm bg-violet-300/70" />
-            ))}
-          </div>
+                <div className="absolute bottom-20 right-[calc(50%+14px)] flex flex-col gap-1 opacity-50">
+                  {queueDots(nsQueue).map((_, i) => (
+                    <div key={`s-${i}`} className="h-5 w-6 rounded-sm bg-emerald-300/60" />
+                  ))}
+                </div>
 
-          <div className="absolute right-20 bottom-[calc(50%+14px)] flex flex-row-reverse gap-1 opacity-50">
-            {queueDots(ewQueue).map((_, i) => (
-              <div key={`e-${i}`} className="h-6 w-5 rounded-sm bg-violet-300/60" />
-            ))}
-          </div>
+                <div className="absolute left-20 top-[calc(50%+14px)] flex gap-1">
+                  {queueDots(ewQueue).map((_, i) => (
+                    <div key={`w-${i}`} className="h-6 w-5 rounded-sm bg-violet-300/70" />
+                  ))}
+                </div>
+
+                <div className="absolute right-20 bottom-[calc(50%+14px)] flex flex-row-reverse gap-1 opacity-50">
+                  {queueDots(ewQueue).map((_, i) => (
+                    <div key={`e-${i}`} className="h-6 w-5 rounded-sm bg-violet-300/60" />
+                  ))}
+                </div>
+              </>
+            )}
 
           <div className="absolute bottom-3 left-3 rounded-lg border border-white/10 bg-black/50 px-3 py-2 text-xs text-white/60">
             t={point?.t ?? 0}s · amostra {points.length ? currentIndex + 1 : 0}/{points.length}
