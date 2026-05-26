@@ -14,8 +14,8 @@ function phaseLabel(phase?: string | null) {
   return phase
 }
 
-function queueDots(count: number | undefined, max = 8) {
-  const safe = Math.max(0, Math.min(max, count ?? 0))
+function queueDots(count: number | undefined, max = 5) {
+  const safe = Math.max(0, Math.min(max, Math.ceil((count ?? 0) / 10)))
   return Array.from({ length: safe })
 }
 
@@ -116,46 +116,46 @@ export function IntersectionReplay(props: { title: string; run: Run | null }) {
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_240px]">
         <div className="relative h-[360px] overflow-hidden rounded-xl border border-white/10 bg-black/30">
-          <div className="absolute left-1/2 top-0 h-full w-20 -translate-x-1/2 bg-white/10" />
-          <div className="absolute left-0 top-1/2 h-20 w-full -translate-y-1/2 bg-white/10" />
-          <div className="absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/10 bg-black/50" />
+          <div className="absolute left-1/2 top-0 h-full w-16 -translate-x-1/2 bg-white/10" />
+          <div className="absolute left-0 top-1/2 h-16 w-full -translate-y-1/2 bg-white/10" />
+          <div className="absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/10 bg-black/70" />
 
           <div className="absolute left-1/2 top-5 -translate-x-1/2 text-xs font-medium text-white/60">Norte</div>
           <div className="absolute bottom-5 left-1/2 -translate-x-1/2 text-xs font-medium text-white/60">Sul</div>
           <div className="absolute left-5 top-1/2 -translate-y-1/2 text-xs font-medium text-white/60">Oeste</div>
           <div className="absolute right-5 top-1/2 -translate-y-1/2 text-xs font-medium text-white/60">Leste</div>
 
-          <div className="absolute left-[calc(50%-54px)] top-[calc(50%-54px)] h-4 w-4 rounded-full border border-white/20 bg-black" />
-          <div className={`absolute left-[calc(50%-51px)] top-[calc(50%-51px)] h-2.5 w-2.5 rounded-full ${isNsActive ? "bg-emerald-300" : "bg-red-400"}`} />
+          <div className="absolute left-[calc(50%-48px)] top-[calc(50%-48px)] h-4 w-4 rounded-full border border-white/20 bg-black" />
+          <div className={`absolute left-[calc(50%-45px)] top-[calc(50%-45px)] h-2.5 w-2.5 rounded-full ${isNsActive ? "bg-emerald-300" : "bg-red-400"}`} />
 
-          <div className="absolute right-[calc(50%-54px)] bottom-[calc(50%-54px)] h-4 w-4 rounded-full border border-white/20 bg-black" />
-          <div className={`absolute right-[calc(50%-51px)] bottom-[calc(50%-51px)] h-2.5 w-2.5 rounded-full ${isEwActive ? "bg-emerald-300" : "bg-red-400"}`} />
+          <div className="absolute right-[calc(50%-48px)] bottom-[calc(50%-48px)] h-4 w-4 rounded-full border border-white/20 bg-black" />
+          <div className={`absolute right-[calc(50%-45px)] bottom-[calc(50%-45px)] h-2.5 w-2.5 rounded-full ${isEwActive ? "bg-emerald-300" : "bg-red-400"}`} />
 
-          <div className="absolute left-[calc(50%+18px)] top-16 flex flex-col-reverse gap-1">
+          <div className="absolute left-[calc(50%+14px)] top-20 flex flex-col-reverse gap-1">
             {queueDots(nsQueue).map((_, i) => (
-              <div key={`n-${i}`} className="h-4 w-7 rounded-sm bg-emerald-300/80" />
+              <div key={`n-${i}`} className="h-5 w-6 rounded-sm bg-emerald-300/70" />
             ))}
           </div>
 
-          <div className="absolute bottom-16 right-[calc(50%+18px)] flex flex-col gap-1">
+          <div className="absolute bottom-20 right-[calc(50%+14px)] flex flex-col gap-1 opacity-50">
             {queueDots(nsQueue).map((_, i) => (
-              <div key={`s-${i}`} className="h-4 w-7 rounded-sm bg-emerald-300/50" />
+              <div key={`s-${i}`} className="h-5 w-6 rounded-sm bg-emerald-300/60" />
             ))}
           </div>
 
-          <div className="absolute left-16 top-[calc(50%+18px)] flex gap-1">
+          <div className="absolute left-20 top-[calc(50%+14px)] flex gap-1">
             {queueDots(ewQueue).map((_, i) => (
-              <div key={`w-${i}`} className="h-7 w-4 rounded-sm bg-violet-300/80" />
+              <div key={`w-${i}`} className="h-6 w-5 rounded-sm bg-violet-300/70" />
             ))}
           </div>
 
-          <div className="absolute right-16 bottom-[calc(50%+18px)] flex flex-row-reverse gap-1">
+          <div className="absolute right-20 bottom-[calc(50%+14px)] flex flex-row-reverse gap-1 opacity-50">
             {queueDots(ewQueue).map((_, i) => (
-              <div key={`e-${i}`} className="h-7 w-4 rounded-sm bg-violet-300/50" />
+              <div key={`e-${i}`} className="h-6 w-5 rounded-sm bg-violet-300/60" />
             ))}
           </div>
 
-          <div className="absolute bottom-3 left-3 rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-xs text-white/60">
+          <div className="absolute bottom-3 left-3 rounded-lg border border-white/10 bg-black/50 px-3 py-2 text-xs text-white/60">
             t={point?.t ?? 0}s · amostra {points.length ? currentIndex + 1 : 0}/{points.length}
           </div>
         </div>
