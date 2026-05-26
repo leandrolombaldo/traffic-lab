@@ -18,6 +18,14 @@ export type RunMetrics = {
   avgStops: number
 }
 
+export type VehicleSnapshot = {
+  id: string
+  laneId: string
+  lanePosition: number
+  laneLength: number
+  speed: number
+}
+
 export type TimeSeriesPoint = {
   t: number
   queueLength: number
@@ -26,6 +34,7 @@ export type TimeSeriesPoint = {
   avgWaitingTimeSeconds: number
   vehicleCount?: number
   trafficLightPhase?: string | null
+  vehicles?: VehicleSnapshot[]
 }
 
 export type Run = {
