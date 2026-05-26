@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import traci
 
@@ -36,7 +37,7 @@ class MetricsCollector:
         self._arrived_stop_sum = 0.0
         self._arrived_count = 0
 
-        self.timeseries: list[dict[str, float | int | str | None]] = []
+        self.timeseries: list[dict[str, Any]] = []
 
     def step(self, t: int) -> None:
         self._t = t
@@ -54,9 +55,6 @@ class MetricsCollector:
             current_wait = float(traci.vehicle.getWaitingTime(vid))
             previous_wait = self._veh_last_wait.get(vid, 0.0)
 
-            # SUMO's waiting time can reset after a vehicle starts moving again.
-            # For run-level metrics, accumulate only positive increments so the
-            # final value represents total waiting experienced by each vehicle.
             increment = max(0.0, current_wait - previous_wait)
             self._veh_wait_accumulated[vid] = self._veh_wait_accumulated.get(vid, 0.0) + increment
             self._veh_last_wait[vid] = current_wait
@@ -71,7 +69,7 @@ class MetricsCollector:
 
         avg_wait = wait_sum / len(vehicle_ids) if vehicle_ids else 0.0
 
-        lanes = [lid for lid in traci.lane.getIDList() if not lid.startswith(":")]
+        lanes = [lid for lid in traci.lane.getIDList() if not lid.startswith(":" )]
         q_total = _queue(lanes)
         q_ns = _queue(self.lane_groups.get("ns", []))
         q_ew = _queue(self.lane_groups.get("ew", []))
@@ -89,6 +87,7 @@ class MetricsCollector:
                 "avgWaitingTimeSeconds": float(avg_wait),
                 "vehicleCount": int(len(vehicle_ids)),
                 "trafficLightPhase": _traffic_light_phase(self.tls_id),
+                "vehicles": _vehicle_snapshots(vehicle_ids),
             }
         )
 
@@ -143,3 +142,27 @@ def _traffic_light_phase(tls_id: str | None) -> str | None:
         return f"{phase_index}:{phase_name}" if phase_name else str(phase_index)
     except traci.TraCIException:
         return None
+
+
+def _vehicle_snapshots(vehicle_ids: tuple[str, ...] | list[str], limit: int = 120) -> list[dict[str, Any]]:
+    snapshots: list[dict[str, Any]] = []
+
+    for vid in list(vehicle_ids)[:limit]:
+        try:
+            lane_id = traci.vehicle.getLaneID(vid)
+            if not lane_id or lane_id.startswith(":"):
+                continue
+
+            snapshots.append(
+                {
+                    "id": vid,
+                    "laneId": lane_id,
+                    "lanePosition": float(traci.vehicle.getLanePosition(vid)),
+                    "laneLength": float(traci.lane.getLength(lane_id)),
+                    "speed": float(traci.vehicle.getSpeed(vid)),
+                }
+            )
+        except traci.TraCIException:
+            continue
+
+    return snapshots
